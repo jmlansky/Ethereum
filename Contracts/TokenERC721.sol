@@ -99,7 +99,7 @@ contract Token721 is ERC165, IERC721 {
     }
 
     function _checkOnERC721Received(address from, address to, uint256 tokenId, bytes memory data) private returns (bool) {
-        if (to.code.length > 0) {
+        if (isContract(to) && to.code.length > 0) {
             try IERC721Receiver(to).onERC721Received(msg.sender, from, tokenId, data) returns (bytes4 retval) {
                 return retval == IERC721Receiver.onERC721Received.selector;
             } catch (bytes memory reason) {
@@ -111,8 +111,23 @@ contract Token721 is ERC165, IERC721 {
                     }
                 }
             }
-        } else {
-            return true;
-        }
+        } 
+        
+        return true;        
     }
+
+    function isContract(address _addr) private view returns (bool) {
+        uint32 size;
+        assembly {
+            size := extcodesize(_addr)
+        }
+
+        return (size == 0);
+
+    }
+
+
+
+    // 1- agregar funcion public safeMint y que apunta a una funcion virtual o interna _mint con las validaciones correspondientes y que emita el evento Transfer
+    // 2- la funcion isContract es lo mismo que to.code.length?
 }
